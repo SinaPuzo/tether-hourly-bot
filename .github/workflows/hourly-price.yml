@@ -2,12 +2,13 @@ name: قیمت تتر هر ساعت
 
 on:
   schedule:
-    - cron: '0 */1 * * *'
+    - cron: '0 */1 * * *'   # هر ۱ ساعت
   workflow_dispatch:
 
 jobs:
   send-price:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
