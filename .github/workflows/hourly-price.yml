@@ -2,7 +2,7 @@ name: قیمت تتر هر ساعت
 
 on:
   schedule:
-    - cron: '0 */1 * * *'   # هر ۱ ساعت
+    - cron: '*/30 * * * *'   # هر ۳۰ دقیقه
   workflow_dispatch:
 
 jobs:
