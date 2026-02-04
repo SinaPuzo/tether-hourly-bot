@@ -25,39 +25,25 @@ async def main():
         r = requests.get(url, timeout=10)
 
         if r.status_code == 200:
-            try:
-                data = r.json()
+            data = r.json()
 
-                # چک کنیم data دیکشنری است یا نه
-                if not isinstance(data, dict):
-                    price_str = f"پاسخ API دیکشنری نیست: {type(data).__name__}"
-
-                elif "result" not in data:
-                    price_str = "کلید 'result' در پاسخ نیست"
-
-                elif not isinstance(data["result"], list):
-                    price_str = f"'result' لیست نیست: {type(data['result']).__name__}"
-
-                else:
-                    for item in data["result"]:
-                        # چک کنیم item دیکشنری است
-                        if isinstance(item, dict):
-                            symbol = item.get("symbol")
-                            if symbol == "USDTTMN":
-                                price = item.get("last")
-                                if price:
-                                    price_str = f"{int(float(price)):,} تومان"
-                                    break
+            if "result" in data and isinstance(data["result"], dict):
+                usdt_market = data["result"].get("USDTTMN")
+                if usdt_market and "stats" in usdt_market:
+                    last_price = usdt_market["stats"].get("lastPrice")
+                    if last_price:
+                        price_str = f"{int(float(last_price)):,} تومان"
                     else:
-                        price_str = "جفت USDTTMN پیدا نشد"
-
-            except ValueError as json_err:
-                price_str = f"خطا در پارس JSON: {str(json_err)}"
+                        price_str = "lastPrice پیدا نشد"
+                else:
+                    price_str = "USDTTMN یا stats پیدا نشد"
+            else:
+                price_str = "result دیکشنری نیست یا وجود ندارد"
         else:
-            price_str = f"خطا در درخواست API (status {r.status_code})"
+            price_str = f"API status {r.status_code}"
 
     except Exception as e:
-        price_str = f"خطای کلی: {str(e)}"
+        price_str = f"خطا: {str(e)}"
 
     now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
     msg = f"💰 قیمت تتر الان:\n{price_str}\n\n🕒 {now}"
