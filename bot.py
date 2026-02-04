@@ -16,18 +16,17 @@ async def main():
     await bot.initialize()
 
     try:
-        # OMP Finex – USDT/IRT
-        url = "https://api.ompfinex.com/v1/market/ticker?symbol=USDTIRT"
+        url = "https://api.wallex.ir/v1/markets?quote_asset=TMN"
         r = requests.get(url, timeout=10)
         data = r.json()
 
-        last_price = data["result"]["last"]
+        last_price = data["result"]["symbols"]["USDTTMN"]["stats"]["lastPrice"]
         price = f"{int(float(last_price)):,} تومان"
 
     except Exception as e:
         price = f"خطا: {e}"
 
-    # تاریخ شمسی (بدون ساعت)
+    # تاریخ شمسی بدون ساعت
     date_shamsi = jdatetime.date.today().strftime("%Y/%m/%d")
 
     msg = f"{price}\n{date_shamsi}"
