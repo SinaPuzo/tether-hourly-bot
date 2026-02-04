@@ -1,7 +1,7 @@
 import os
 import requests
-import datetime
 import asyncio
+import jdatetime
 from telegram import Bot
 
 async def main():
@@ -15,34 +15,21 @@ async def main():
     bot = Bot(token=TOKEN)
     await bot.initialize()
 
-    price_str = "خطا در دریافت قیمت"
-
     try:
-        url = "https://api.wallex.ir/v1/markets?quote_asset=TMN"
+        url = "https://api.nobitex.ir/v2/market/stats?srcCurrency=usdt&dstCurrency=irt"
         r = requests.get(url, timeout=10)
+        data = r.json()
 
-        if r.status_code == 200:
-            data = r.json()
-
-            # مسیر صحیح JSON
-            usdt_market = data["result"]["symbols"].get("USDTTMN")
-
-            if usdt_market:
-                last_price = usdt_market["stats"].get("lastPrice")
-                if last_price:
-                    price_str = f"{int(float(last_price)):,} تومان"
-                else:
-                    price_str = "lastPrice پیدا نشد"
-            else:
-                price_str = "USDTTMN پیدا نشد"
-        else:
-            price_str = f"خطای API: {r.status_code}"
+        last_price = data["stats"]["usdt-irt"]["latest"]
+        price = f"{int(float(last_price)):,} تومان"
 
     except Exception as e:
-        price_str = f"خطا: {e}"
+        price = f"خطا: {e}"
 
-    now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-    msg = f"💰 قیمت تتر:\n{price_str}\n\n🕒 {now}"
+    # تاریخ شمسی (بدون ساعت)
+    date_shamsi = jdatetime.date.today().strftime("%Y/%m/%d")
+
+    msg = f"{price}\n{date_shamsi}"
 
     await bot.send_message(chat_id=CHANNEL_ID, text=msg)
     await bot.shutdown()
