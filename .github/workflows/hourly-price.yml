@@ -1,14 +1,13 @@
-name: قیمت تتر هر ساعت
+name: قیمت تتر هر ۳ دقیقه
 
 on:
   schedule:
-    - cron: '*/30 * * * *'   # هر ۳۰ دقیقه
-  workflow_dispatch:
+    - cron: '*/3 * * * *'     # هر ۳ دقیقه یک بار
+  workflow_dispatch:          # برای تست دستی
 
 jobs:
   send-price:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
