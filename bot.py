@@ -17,44 +17,41 @@ async def main():
     await bot.initialize()
 
     try:
-        print("درخواست به Wallex markets...")
-        r = requests.get("https://api.wallex.ir/v1/markets?quote_asset=IRT", timeout=10)
-        print("وضعیت پاسخ:", r.status_code)
-        print("محتوای خام پاسخ (اول 300 کاراکتر):")
-        print(r.text[:300])
+        print("درخواست به Wallex...")
+        r = requests.get("https://api.wallex.ir/v1/markets?quote_asset=TMN", timeout=10)  # TMN نه IRT
+        print("وضعیت:", r.status_code)
 
         price_str = "خطا در API Wallex"
 
         if r.status_code == 200:
             try:
                 data = r.json()
-                print("پاسخ JSON شد. نوع data:", type(data))
                 if isinstance(data, dict) and "result" in data:
                     for market in data["result"]:
-                        if isinstance(market, dict) and market.get("base_asset") == "USDT":
+                        if isinstance(market, dict) and market.get("symbol") == "USDTTMN":
                             price = market.get("last")
                             if price:
                                 price_str = f"{int(float(price)):,} تومان"
                                 break
                     else:
-                        price_str = "USDT در لیست پیدا نشد"
+                        price_str = "USDTTMN پیدا نشد"
                 else:
-                    price_str = "پاسخ JSON معتبر نبود"
+                    price_str = "پاسخ نامعتبر"
             except Exception as json_err:
-                price_str = f"خطا در تبدیل به JSON: {str(json_err)}"
+                price_str = f"JSON خطا: {str(json_err)}"
         else:
-            price_str = f"خطا Wallex status {r.status_code}"
+            price_str = f"خطا status {r.status_code}"
 
         now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
         msg = f"💰 قیمت تتر الان:\n{price_str}\n\n🕒 {now}"
 
         await bot.send_message(chat_id=CHANNEL_ID, text=msg)
-        print("پیام ارسال شد")
+        print("ارسال شد")
 
         await bot.shutdown()
 
     except Exception as e:
-        print("خطای کلی:", str(e))
-        await bot.send_message(chat_id=CHANNEL_ID, text=f"خطا در اجرا: {str(e)}")
+        print("خطا:", str(e))
+        await bot.send_message(chat_id=CHANNEL_ID, text=f"خطا: {str(e)}")
 
 asyncio.run(main())
