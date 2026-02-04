@@ -17,28 +17,22 @@ async def main():
     await bot.initialize()
 
     try:
-        print("درخواست به Wallex...")
-        r = requests.get("https://api.wallex.ir/v1/markets?quote_asset=TMN", timeout=10)  # TMN نه IRT
-        print("وضعیت:", r.status_code)
-
+        r = requests.get("https://api.wallex.ir/v1/markets?quote_asset=TMN", timeout=10)
         price_str = "خطا در API Wallex"
 
         if r.status_code == 200:
-            try:
-                data = r.json()
-                if isinstance(data, dict) and "result" in data:
-                    for market in data["result"]:
-                        if isinstance(market, dict) and market.get("symbol") == "USDTTMN":
-                            price = market.get("last")
-                            if price:
-                                price_str = f"{int(float(price)):,} تومان"
-                                break
-                    else:
-                        price_str = "USDTTMN پیدا نشد"
+            data = r.json()
+            if "result" in data:
+                for market in data["result"]:
+                    if market.get("symbol") == "USDTTMN":
+                        price = market.get("last")
+                        if price:
+                            price_str = f"{int(float(price)):,} تومان"
+                            break
                 else:
-                    price_str = "پاسخ نامعتبر"
-            except Exception as json_err:
-                price_str = f"JSON خطا: {str(json_err)}"
+                    price_str = "USDTTMN پیدا نشد"
+            else:
+                price_str = "پاسخ بدون result"
         else:
             price_str = f"خطا status {r.status_code}"
 
@@ -46,7 +40,7 @@ async def main():
         msg = f"💰 قیمت تتر الان:\n{price_str}\n\n🕒 {now}"
 
         await bot.send_message(chat_id=CHANNEL_ID, text=msg)
-        print("ارسال شد")
+        print("پیام ارسال شد")
 
         await bot.shutdown()
 
