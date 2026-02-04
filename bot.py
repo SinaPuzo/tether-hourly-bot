@@ -16,11 +16,12 @@ async def main():
     await bot.initialize()
 
     try:
-        url = "https://api.nobitex.ir/v2/market/stats?srcCurrency=usdt&dstCurrency=irt"
+        # OMP Finex – USDT/IRT
+        url = "https://api.ompfinex.com/v1/market/ticker?symbol=USDTIRT"
         r = requests.get(url, timeout=10)
         data = r.json()
 
-        last_price = data["stats"]["usdt-irt"]["latest"]
+        last_price = data["result"]["last"]
         price = f"{int(float(last_price)):,} تومان"
 
     except Exception as e:
