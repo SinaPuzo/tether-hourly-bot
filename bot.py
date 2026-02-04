@@ -8,35 +8,43 @@ async def main():
     TOKEN = os.getenv("TELEGRAM_TOKEN")
     CHANNEL_ID = os.getenv("CHANNEL_ID")
 
+    if not TOKEN or not CHANNEL_ID:
+        print("TOKEN یا CHANNEL_ID ست نشده")
+        return
+
     bot = Bot(token=TOKEN)
     await bot.initialize()
 
-    price_str = "قیمت پیدا نشد"
+    price_str = "خطا در دریافت قیمت"
 
     try:
-        # قیمت تتر دلاری
-        r_tether = requests.get("https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=usd", timeout=8)
-        usd_price = r_tether.json()["tether"]["usd"]
+        url = "https://api.wallex.ir/v1/markets?quote_asset=TMN"
+        r = requests.get(url, timeout=10)
 
-        # نرخ دلار آزاد از منبع ساده (مثال: api.arzdigital یا tgju)
-        r_dollar = requests.get("https://api.arzdigital.com/api/v1/currencies/usd", timeout=8)
-        if r_dollar.status_code == 200:
-            dollar_data = r_dollar.json()
-            dollar_price = dollar_data.get("price", 92000)  # اگر خطا داد، پیش‌فرض
+        if r.status_code == 200:
+            data = r.json()
+
+            # مسیر صحیح JSON
+            usdt_market = data["result"]["symbols"].get("USDTTMN")
+
+            if usdt_market:
+                last_price = usdt_market["stats"].get("lastPrice")
+                if last_price:
+                    price_str = f"{int(float(last_price)):,} تومان"
+                else:
+                    price_str = "lastPrice پیدا نشد"
+            else:
+                price_str = "USDTTMN پیدا نشد"
         else:
-            dollar_price = 92000  # پیش‌فرض
-
-        toman_price = usd_price * dollar_price
-        price_str = f"{int(toman_price):,} تومان"
+            price_str = f"خطای API: {r.status_code}"
 
     except Exception as e:
-        price_str = f"خطا: {str(e)}"
+        price_str = f"خطا: {e}"
 
     now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
-    msg = f"💰 قیمت تتر الان:\n{price_str}\n\n🕒 {now} (CoinGecko + نرخ دلار)"
+    msg = f"💰 قیمت تتر:\n{price_str}\n\n🕒 {now}"
 
     await bot.send_message(chat_id=CHANNEL_ID, text=msg)
-
     await bot.shutdown()
 
 asyncio.run(main())
