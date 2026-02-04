@@ -17,18 +17,19 @@ async def main():
     await bot.initialize()
 
     try:
-        # قیمت از Wallex
-        r = requests.get("https://api.wallex.ir/v1/currencies/stats?quote_asset=IRT", timeout=10)
+        # قیمت از Wallex جدید (markets)
+        r = requests.get("https://api.wallex.ir/v1/markets?quote_asset=IRT", timeout=10)
         if r.status_code == 200:
             data = r.json()
-            usdt = data.get("result", {}).get("USDT", {}).get("stats", {})
-            price = usdt.get("last") or usdt.get("latest")
-            if price:
-                price_str = f"{int(float(price)):,} تومان"
-            else:
-                price_str = "خطا در داده Wallex"
+            price_str = "USDT پیدا نشد در Wallex"
+            for market in data.get("result", []):
+                if market.get("base_asset") == "USDT":
+                    price = market.get("last")
+                    if price:
+                        price_str = f"{int(float(price)):,} تومان"
+                        break
         else:
-            price_str = f"خطا API Wallex (status {r.status_code})"
+            price_str = f"خطا Wallex (status {r.status_code}) - {r.text[:200]}"
 
         now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
         msg = f"💰 قیمت تتر الان:\n{price_str}\n\n🕒 {now}"
