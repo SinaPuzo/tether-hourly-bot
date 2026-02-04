@@ -2,7 +2,7 @@ name: قیمت تتر هر ۳ دقیقه
 
 on:
   schedule:
-    - cron: '*/3 * * * *'     # هر ۳ دقیقه یک بار
+    - cron: '*/6 * * * *'
   workflow_dispatch:          # برای تست دستی
 
 jobs:
