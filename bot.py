@@ -14,13 +14,17 @@ async def main():
     price_str = "قیمت پیدا نشد"
 
     try:
-        r = requests.get("https://api.wallex.ir/v1/markets", timeout=10)
-        data = r.json()
-        usdt = data["result"]["USDTTMN"]
-        price = usdt["stats"]["lastPrice"]
-        price_str = f"{int(float(price)):,} تومان"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        r = requests.get("https://api.nobitex.ir/v2/trades/USDTIRT", headers=headers, timeout=10)
+        if r.status_code == 200:
+            data = r.json()
+            if "trades" in data and data["trades"]:
+                price = data["trades"][0]["price"]
+                price_str = f"{int(float(price)):,} تومان"
     except:
-        pass  # اگر هر مشکلی بود، همون پیام پیش‌فرض می‌مونه
+        pass
 
     now = datetime.datetime.now().strftime("%H:%M - %Y/%m/%d")
     msg = f"💰 قیمت تتر الان:\n{price_str}\n\n🕒 {now}"
